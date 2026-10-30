@@ -6,6 +6,25 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setStyleSheet(R"(
+QPushButton{
+    font-size:24px;
+    min-height:70px;
+    min-width:80px;
+    border-radius:10px;
+    background-color:#eeeeee;
+}
+QPushButton:pressed{
+    background-color:#cccccc;
+}
+QLabel#label_display{
+    font-size:40px;
+    background-color:#222222;
+    color:white;
+    padding:10px;
+    border-radius:8px;
+}
+)");
     connect(ui->btn_0,&QPushButton::clicked,this,&MainWindow::onNumberClicked);
     connect(ui->btn_1,&QPushButton::clicked,this,&MainWindow::onNumberClicked);
     connect(ui->btn_2,&QPushButton::clicked,this,&MainWindow::onNumberClicked);
