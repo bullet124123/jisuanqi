@@ -35,6 +35,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::handleInput(QString ch)
 {
+    if(hasError){
+        if(ch != "C") return;
+        hasError = false;
+    }
+
     if(ch >= "0" && ch <= "9"){
         if(isNewNum){
             ui->label_display->setText(ch);
@@ -44,28 +49,43 @@ void MainWindow::handleInput(QString ch)
         }
     }else if(ch == "."){
         QString s = ui->label_display->text();
-        if(!s.contains(".")){
-            ui->label_display->setText(s + ".");
+        if(s.isEmpty()) ui->label_display->setText("0");
+        if(!ui->label_display->text().contains(".")){
+            ui->label_display->setText(ui->label_display->text() + ".");
             isNewNum = false;
         }
     }else if(ch == "+" || ch == "-" || ch == "*" || ch == "/"){
-        num1 = ui->label_display->text().toDouble();
+        QString s = ui->label_display->text();
+        if(s.isEmpty()) return;
+        num1 = s.toDouble();
         op = ch;
         isNewNum = true;
     }else if(ch == "="){
-        double num2 = ui->label_display->text().toDouble();
+        if(op.isEmpty()) return;
+        QString s = ui->label_display->text();
+        if(s.isEmpty()) return;
+        double num2 = s.toDouble();
         double res = 0;
         if(op == "+") res = num1 + num2;
         else if(op == "-") res = num1 - num2;
         else if(op == "*") res = num1 * num2;
-        else if(op == "/") res = num1 / num2;
+        else if(op == "/"){
+            if(qAbs(num2) < 1e-9){
+                ui->label_display->setText("除零错误");
+                hasError = true;
+                return;
+            }
+            res = num1 / num2;
+        }
         ui->label_display->setText(QString::number(res));
         isNewNum = true;
+        op = "";
     }else if(ch == "C"){
         ui->label_display->setText("");
         num1 = 0;
         op = "";
         isNewNum = true;
+        hasError = false;
     }else if(ch == "Back"){
         QString s = ui->label_display->text();
         s.chop(1);
