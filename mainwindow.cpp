@@ -6,7 +6,6 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    // 数字按钮绑定
     connect(ui->btn_0,&QPushButton::clicked,this,&MainWindow::onNumberClicked);
     connect(ui->btn_1,&QPushButton::clicked,this,&MainWindow::onNumberClicked);
     connect(ui->btn_2,&QPushButton::clicked,this,&MainWindow::onNumberClicked);
@@ -17,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btn_7,&QPushButton::clicked,this,&MainWindow::onNumberClicked);
     connect(ui->btn_8,&QPushButton::clicked,this,&MainWindow::onNumberClicked);
     connect(ui->btn_9,&QPushButton::clicked,this,&MainWindow::onNumberClicked);
-    //运算符
+
     connect(ui->btn_add,&QPushButton::clicked,this,&MainWindow::onOpClicked);
     connect(ui->btn_sub,&QPushButton::clicked,this,&MainWindow::onOpClicked);
     connect(ui->btn_mul,&QPushButton::clicked,this,&MainWindow::onOpClicked);
@@ -34,58 +33,71 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::handleInput(QString ch)
+{
+    if(ch >= "0" && ch <= "9"){
+        if(isNewNum){
+            ui->label_display->setText(ch);
+            isNewNum = false;
+        }else{
+            ui->label_display->setText(ui->label_display->text() + ch);
+        }
+    }else if(ch == "."){
+        QString s = ui->label_display->text();
+        if(!s.contains(".")){
+            ui->label_display->setText(s + ".");
+            isNewNum = false;
+        }
+    }else if(ch == "+" || ch == "-" || ch == "*" || ch == "/"){
+        num1 = ui->label_display->text().toDouble();
+        op = ch;
+        isNewNum = true;
+    }else if(ch == "="){
+        double num2 = ui->label_display->text().toDouble();
+        double res = 0;
+        if(op == "+") res = num1 + num2;
+        else if(op == "-") res = num1 - num2;
+        else if(op == "*") res = num1 * num2;
+        else if(op == "/") res = num1 / num2;
+        ui->label_display->setText(QString::number(res));
+        isNewNum = true;
+    }else if(ch == "C"){
+        ui->label_display->setText("");
+        num1 = 0;
+        op = "";
+        isNewNum = true;
+    }else if(ch == "Back"){
+        QString s = ui->label_display->text();
+        s.chop(1);
+        ui->label_display->setText(s);
+    }
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    QString keyText = event->text();
+    if(keyText >= "0" && keyText <= "9" || keyText == "." || keyText == "+" || keyText == "-" || keyText == "*" || keyText == "/"){
+        handleInput(keyText);
+    }else if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return){
+        handleInput("=");
+    }else if(event->key() == Qt::Key_Backspace){
+        handleInput("Back");
+    }else if(event->key() == Qt::Key_C){
+        handleInput("C");
+    }
+}
+
 void MainWindow::onNumberClicked()
 {
     QPushButton* btn = qobject_cast<QPushButton*>(sender());
-    if(isNewNum){
-        ui->label_display->setText(btn->text());
-        isNewNum = false;
-    }else{
-        ui->label_display->setText(ui->label_display->text() + btn->text());
-    }
+    handleInput(btn->text());
 }
-
 void MainWindow::onOpClicked()
 {
     QPushButton* btn = qobject_cast<QPushButton*>(sender());
-    num1 = ui->label_display->text().toDouble();
-    op = btn->text();
-    isNewNum = true;
+    handleInput(btn->text());
 }
-
-void MainWindow::onDotClicked()
-{
-    QString s = ui->label_display->text();
-    if(!s.contains(".")){
-        ui->label_display->setText(s + ".");
-        isNewNum = false;
-    }
-}
-
-void MainWindow::onEqClicked()
-{
-    double num2 = ui->label_display->text().toDouble();
-    double res = 0;
-    if(op == "+") res = num1 + num2;
-    else if(op == "-") res = num1 - num2;
-    else if(op == "*") res = num1 * num2;
-    else if(op == "/") res = num1 / num2;
-
-    ui->label_display->setText(QString::number(res));
-    isNewNum = true;
-}
-
-void MainWindow::onClearClicked()
-{
-    ui->label_display->setText("");
-    num1 = 0;
-    op = "";
-    isNewNum = true;
-}
-
-void MainWindow::onBackClicked()
-{
-    QString s = ui->label_display->text();
-    s.chop(1);
-    ui->label_display->setText(s);
-}
+void MainWindow::onDotClicked(){ handleInput("."); }
+void MainWindow::onEqClicked(){ handleInput("="); }
+void MainWindow::onClearClicked(){ handleInput("C"); }
+void MainWindow::onBackClicked(){ handleInput("Back"); }
